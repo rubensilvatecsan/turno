@@ -3,76 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Control de Turnos</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<title>Tecsan - Control de Turnos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 <style>
   :root {
-    --cat-yellow: #FFCD11;
-    --cat-black: #0A0A0A;
-    --cat-dark: #141414;
-    --cat-steel: #1E1E1E;
-    --cat-gray: #2E2E2E;
-    --cat-light: #8A8A8A;
-    --cat-white: #F5F5F0;
-    --turno-manana: #FFB300;
-    --turno-tarde: #FF6B35;
-    --turno-noche: #4A90D9;
-    --success: #4CAF50;
+    --tecsan-blue: #1B6FC8;
+    --tecsan-green: #1FAF6E;
+    --tecsan-orange: #F5A623;
+    --tecsan-dark: #2E2E2E;
+    --tecsan-gray: #3D3D3D;
+    --tecsan-light: #6B6B6B;
+    --tecsan-white: #F8F8F8;
+    --tecsan-bg: #1A1A1A;
+    --success: #1FAF6E;
     --danger: #E53935;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   body {
-    background: var(--cat-black);
-    color: var(--cat-white);
-    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--tecsan-bg);
+    color: var(--tecsan-white);
+    font-family: 'Arial', sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     position: relative;
+    overflow: hidden;
   }
 
-  /* Background texture */
+  /* Background pattern */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: 
-      repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 40px,
-        rgba(255,205,17,0.015) 40px,
-        rgba(255,205,17,0.015) 41px
-      ),
-      repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 40px,
-        rgba(255,255,255,0.01) 40px,
-        rgba(255,255,255,0.01) 41px
-      );
+    background: radial-gradient(ellipse at top left, rgba(27,111,200,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(31,175,110,0.06) 0%, transparent 50%);
     pointer-events: none;
   }
 
-  /* CAT stripe top */
-  .cat-stripe {
+  /* Top bar con colores Tecsan */
+  .top-bar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 6px;
-    background: var(--cat-yellow);
+    height: 5px;
+    display: flex;
     z-index: 100;
   }
+  .top-bar div { flex: 1; }
+  .top-bar .b1 { background: var(--tecsan-blue); }
+  .top-bar .b2 { background: var(--tecsan-green); }
+  .top-bar .b3 { background: var(--tecsan-orange); }
 
   .app-container {
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     padding: 20px;
     position: relative;
     z-index: 10;
@@ -81,41 +70,52 @@
   /* HEADER */
   .header {
     text-align: center;
-    margin-bottom: 32px;
-    animation: fadeDown 0.6s ease both;
+    margin-bottom: 24px;
+    animation: fadeDown 0.5s ease both;
   }
 
-  .cat-logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+  .logo-container {
+    margin-bottom: 10px;
   }
 
-  .cat-badge {
-    background: var(--cat-yellow);
-    color: var(--cat-black);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    padding: 4px 12px;
-    letter-spacing: 2px;
-  }
-
-  .header h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    letter-spacing: 4px;
-    color: var(--cat-white);
-    line-height: 1;
+  .logo-svg {
+    width: 160px;
+    height: auto;
   }
 
   .header .subtitle {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
-    color: var(--cat-light);
+    color: var(--tecsan-light);
     letter-spacing: 3px;
     text-transform: uppercase;
-    margin-top: 4px;
+    margin-top: 6px;
+  }
+
+  /* MQTT STATUS */
+  .mqtt-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    animation: fadeDown 0.5s 0.1s ease both;
+  }
+
+  .mqtt-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tecsan-light);
+  }
+
+  .mqtt-dot.conectado { background: var(--tecsan-green); animation: pulse 2s infinite; }
+  .mqtt-dot.error { background: var(--danger); }
+
+  .mqtt-label {
+    font-size: 10px;
+    color: var(--tecsan-light);
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
 
   /* TURNO INDICATOR */
@@ -124,59 +124,46 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-bottom: 28px;
-    animation: fadeDown 0.6s 0.1s ease both;
+    margin-bottom: 20px;
   }
 
   .turno-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     animation: pulse 2s infinite;
   }
 
   .turno-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
+    font-size: 11px;
+    color: var(--tecsan-light);
     letter-spacing: 2px;
     text-transform: uppercase;
   }
 
   /* CARD */
   .card {
-    background: var(--cat-steel);
-    border: 1px solid var(--cat-gray);
-    border-top: 3px solid var(--cat-yellow);
-    padding: 28px 24px;
-    position: relative;
-    animation: fadeUp 0.6s 0.2s ease both;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    right: 24px;
-    width: 40px;
-    height: 3px;
-    background: var(--cat-black);
+    background: var(--tecsan-gray);
+    border: 1px solid #444;
+    border-top: 3px solid var(--tecsan-blue);
+    padding: 24px 20px;
+    animation: fadeUp 0.5s 0.2s ease both;
   }
 
   /* MACHINE INFO */
   .machine-info {
-    background: var(--cat-gray);
-    padding: 12px 16px;
-    margin-bottom: 24px;
+    background: #2a2a2a;
+    padding: 10px 14px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-left: 3px solid var(--cat-yellow);
+    border-left: 3px solid var(--tecsan-orange);
   }
 
   .machine-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--cat-light);
+    font-size: 9px;
+    color: var(--tecsan-light);
     letter-spacing: 2px;
     text-transform: uppercase;
     display: block;
@@ -184,59 +171,52 @@
   }
 
   .machine-id {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    color: var(--cat-yellow);
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--tecsan-orange);
     letter-spacing: 2px;
   }
 
   .machine-model {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
-    color: var(--cat-white);
-    text-align: right;
+    color: var(--tecsan-white);
+    font-weight: bold;
   }
 
   /* FORM */
-  .field {
-    margin-bottom: 20px;
-  }
+  .field { margin-bottom: 18px; }
 
   .field label {
     display: block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
+    font-size: 9px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: var(--cat-light);
+    color: var(--tecsan-light);
     margin-bottom: 8px;
   }
 
   .field input {
     width: 100%;
-    background: var(--cat-dark);
-    border: 1px solid var(--cat-gray);
-    border-bottom: 2px solid var(--cat-yellow);
-    color: var(--cat-white);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 24px;
-    font-weight: 600;
-    padding: 14px 16px;
+    background: #222;
+    border: 1px solid #444;
+    border-bottom: 2px solid var(--tecsan-blue);
+    color: var(--tecsan-white);
+    font-size: 26px;
+    font-weight: bold;
+    padding: 12px 14px;
     outline: none;
     letter-spacing: 4px;
     -webkit-appearance: none;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color 0.2s;
   }
 
   .field input:focus {
-    background: #1a1a1a;
-    border-bottom-color: var(--cat-white);
+    border-bottom-color: var(--tecsan-green);
   }
 
   .field input::placeholder {
-    color: var(--cat-gray);
+    color: #444;
     font-size: 20px;
-    letter-spacing: 2px;
   }
 
   /* TURNO SELECTOR */
@@ -244,138 +224,100 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   .turno-btn {
-    background: var(--cat-dark);
-    border: 1px solid var(--cat-gray);
-    color: var(--cat-light);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
+    background: #222;
+    border: 1px solid #444;
+    color: var(--tecsan-light);
+    font-size: 10px;
     letter-spacing: 1px;
     text-transform: uppercase;
-    padding: 12px 8px;
+    padding: 12px 6px;
     cursor: pointer;
     text-align: center;
     transition: all 0.2s;
     -webkit-appearance: none;
   }
 
-  .turno-btn .turno-icon {
-    display: block;
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
+  .turno-btn .turno-icon { display: block; font-size: 20px; margin-bottom: 4px; }
 
-  .turno-btn.active-manana {
-    background: rgba(255, 179, 0, 0.15);
-    border-color: var(--turno-manana);
-    color: var(--turno-manana);
-  }
+  .turno-btn.active-manana { background: rgba(245,166,35,0.15); border-color: var(--tecsan-orange); color: var(--tecsan-orange); }
+  .turno-btn.active-tarde  { background: rgba(27,111,200,0.15); border-color: var(--tecsan-blue);   color: var(--tecsan-blue); }
+  .turno-btn.active-noche  { background: rgba(31,175,110,0.15); border-color: var(--tecsan-green);  color: var(--tecsan-green); }
 
-  .turno-btn.active-tarde {
-    background: rgba(255, 107, 53, 0.15);
-    border-color: var(--turno-tarde);
-    color: var(--turno-tarde);
-  }
-
-  .turno-btn.active-noche {
-    background: rgba(74, 144, 217, 0.15);
-    border-color: var(--turno-noche);
-    color: var(--turno-noche);
-  }
-
-  /* SUBMIT BUTTON */
+  /* SUBMIT */
   .btn-iniciar {
     width: 100%;
-    background: var(--cat-yellow);
-    color: var(--cat-black);
+    background: var(--tecsan-blue);
+    color: white;
     border: none;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 4px;
-    padding: 18px;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    padding: 16px;
     cursor: pointer;
     transition: all 0.2s;
     -webkit-appearance: none;
-    position: relative;
-    overflow: hidden;
+    text-transform: uppercase;
   }
 
-  .btn-iniciar:active {
-    transform: scale(0.98);
-    background: #e6b800;
-  }
-
-  .btn-iniciar:disabled {
-    background: var(--cat-gray);
-    color: var(--cat-light);
-    cursor: not-allowed;
-  }
+  .btn-iniciar:active { background: #1558a0; transform: scale(0.98); }
+  .btn-iniciar:disabled { background: #444; color: var(--tecsan-light); cursor: not-allowed; }
 
   /* ERROR */
   .error-msg {
-    background: rgba(229, 57, 53, 0.1);
-    border: 1px solid var(--danger);
+    background: rgba(229,57,53,0.1);
     border-left: 3px solid var(--danger);
     color: #ff6b6b;
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
-    letter-spacing: 1px;
     padding: 10px 14px;
     margin-top: 12px;
     display: none;
   }
-
   .error-msg.show { display: block; animation: shake 0.4s ease; }
 
-  /* SUCCESS SCREEN */
-  .success-screen {
-    display: none;
-    text-align: center;
-    animation: fadeUp 0.5s ease both;
-  }
-
+  /* SUCCESS */
+  .success-screen { display: none; text-align: center; animation: fadeUp 0.5s ease both; }
   .success-screen.show { display: block; }
   .card.hide { display: none; }
 
   .success-icon {
-    width: 80px;
-    height: 80px;
-    background: var(--success);
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    margin: 0 auto 20px;
+    font-size: 32px;
+    margin: 0 auto 16px;
     animation: popIn 0.5s ease both;
   }
+  .success-icon.inicio { background: var(--tecsan-green); }
+  .success-icon.fin    { background: var(--tecsan-orange); }
 
   .success-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
-    letter-spacing: 3px;
-    color: var(--cat-white);
-    line-height: 1;
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--tecsan-white);
     margin-bottom: 4px;
   }
 
   .success-legajo {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    color: var(--cat-light);
+    font-size: 12px;
+    color: var(--tecsan-light);
     letter-spacing: 3px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .success-details {
-    background: var(--cat-steel);
-    border: 1px solid var(--cat-gray);
-    border-left: 3px solid var(--success);
-    padding: 16px 20px;
-    margin-bottom: 24px;
+    background: var(--tecsan-gray);
+    border: 1px solid #444;
+    border-left: 3px solid var(--tecsan-green);
+    padding: 14px 18px;
+    margin-bottom: 20px;
     text-align: left;
   }
 
@@ -383,132 +325,154 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--cat-gray);
+    padding: 5px 0;
+    border-bottom: 1px solid #444;
   }
-
   .detail-row:last-child { border-bottom: none; }
 
   .detail-key {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--cat-light);
+    font-size: 9px;
+    color: var(--tecsan-light);
     letter-spacing: 2px;
     text-transform: uppercase;
   }
 
   .detail-val {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
-    color: var(--cat-white);
-    font-weight: 600;
-  }
-
-  .turno-badge {
-    padding: 2px 10px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
+    color: var(--tecsan-white);
+    font-weight: bold;
   }
 
   .btn-catinspect {
     width: 100%;
-    background: var(--cat-yellow);
-    color: var(--cat-black);
+    background: var(--tecsan-green);
+    color: white;
     border: none;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 4px;
-    padding: 18px;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    padding: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     -webkit-appearance: none;
     transition: all 0.2s;
+    text-transform: uppercase;
   }
-
-  .btn-catinspect:active { transform: scale(0.98); }
+  .btn-catinspect:active { background: #178a56; }
 
   .btn-logout {
     width: 100%;
     background: transparent;
-    color: var(--cat-light);
-    border: 1px solid var(--cat-gray);
-    font-family: 'IBM Plex Mono', monospace;
+    color: var(--tecsan-light);
+    border: 1px solid #444;
     font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    padding: 14px;
+    padding: 12px;
     cursor: pointer;
     -webkit-appearance: none;
     transition: all 0.2s;
   }
+  .btn-logout:active { background: #444; }
 
-  .btn-logout:active { background: var(--cat-gray); }
+  /* MQTT sending indicator */
+  .mqtt-sending {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--tecsan-green);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .mqtt-sending.show { display: flex; }
 
   /* CLOCK */
   .clock {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--cat-light);
+    font-size: 11px;
+    color: var(--tecsan-light);
     text-align: center;
-    margin-top: 20px;
+    margin-top: 16px;
     letter-spacing: 2px;
-    animation: fadeDown 0.6s 0.3s ease both;
+    animation: fadeDown 0.5s 0.3s ease both;
   }
 
   /* ANIMATIONS */
   @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
+    50%       { opacity: 0.4; transform: scale(0.8); }
   }
-
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-6px); }
-    40%, 80% { transform: translateX(6px); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
   }
-
   @keyframes popIn {
-    0% { transform: scale(0); opacity: 0; }
-    70% { transform: scale(1.1); }
+    0%   { transform: scale(0); opacity: 0; }
+    70%  { transform: scale(1.1); }
     100% { transform: scale(1); opacity: 1; }
   }
 </style>
 </head>
 <body>
 
-<div class="cat-stripe"></div>
+<div class="top-bar">
+  <div class="b1"></div>
+  <div class="b2"></div>
+  <div class="b3"></div>
+</div>
 
 <div class="app-container">
 
   <!-- HEADER -->
   <div class="header">
-    <div class="cat-logo">
-      <div class="cat-badge">CAT</div>
+    <div class="logo-container">
+      <!-- Logo Tecsan SVG inline -->
+      <svg class="logo-svg" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ícono circular Tecsan -->
+        <g transform="translate(10, 8)">
+          <!-- Segmento azul -->
+          <path d="M32,4 A28,28 0 0,1 56,18 L44,26 A14,14 0 0,0 32,18 Z" fill="#1B6FC8"/>
+          <!-- Segmento verde -->
+          <path d="M56,18 A28,28 0 0,1 56,46 L44,38 A14,14 0 0,0 44,26 Z" fill="#1FAF6E"/>
+          <!-- Segmento naranja -->
+          <path d="M56,46 A28,28 0 0,1 8,46 L20,38 A14,14 0 0,0 44,38 Z" fill="#F5A623"/>
+          <!-- Segmento gris -->
+          <path d="M8,46 A28,28 0 0,1 8,18 L20,26 A14,14 0 0,0 20,38 Z" fill="#555"/>
+          <!-- Círculo interior -->
+          <circle cx="32" cy="32" r="10" fill="#1A1A1A"/>
+        </g>
+        <!-- Texto TECSAN -->
+        <text x="80" y="52" font-family="Arial Black, Arial" font-weight="900" font-size="36" fill="#F8F8F8" letter-spacing="2">TECSAN</text>
+      </svg>
     </div>
-    <h1>CONTROL DE TURNOS</h1>
-    <div class="subtitle">Sistema de registro de maquinistas</div>
+    <div class="subtitle">Control de Turnos — Maquinistas</div>
+  </div>
+
+  <!-- MQTT STATUS -->
+  <div class="mqtt-status">
+    <div class="turno-dot mqtt-dot" id="mqttDot"></div>
+    <span class="mqtt-label" id="mqttLabel">Conectando...</span>
   </div>
 
   <!-- TURNO ACTUAL -->
-  <div class="turno-actual" id="turnoActualDisplay">
-    <div class="turno-dot" id="turnoDot" style="background: var(--turno-manana)"></div>
-    <span class="turno-label" id="turnoActualLabel">Turno Mañana</span>
+  <div class="turno-actual">
+    <div class="turno-dot" id="turnoDot"></div>
+    <span class="turno-label" id="turnoActualLabel">—</span>
   </div>
 
   <!-- LOGIN CARD -->
@@ -516,40 +480,36 @@
 
     <div class="machine-info">
       <div>
-        <span class="machine-label">Máquina</span>
+        <span class="machine-label">ID Máquina</span>
         <span class="machine-id" id="machineId">5165</span>
       </div>
       <div class="machine-model" id="machineModel">826K</div>
     </div>
 
     <div class="field">
-      <label>Legajo del maquinista</label>
-      <input 
-        type="number" 
-        id="legajoInput" 
-        placeholder="00000" 
-        maxlength="10"
+      <label>Legajo del operador</label>
+      <input
+        type="number"
+        id="legajoInput"
+        placeholder="00000"
         inputmode="numeric"
         autocomplete="off"
       />
     </div>
 
     <div style="margin-bottom: 8px;">
-      <label style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--cat-light); display: block; margin-bottom: 8px;">Turno</label>
+      <label style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--tecsan-light); display:block; margin-bottom:8px;">Turno</label>
     </div>
 
     <div class="turno-selector">
       <button class="turno-btn" id="btnManana" onclick="selectTurno('manana')">
-        <span class="turno-icon">🌅</span>
-        Mañana
+        <span class="turno-icon">🌅</span>Mañana
       </button>
       <button class="turno-btn" id="btnTarde" onclick="selectTurno('tarde')">
-        <span class="turno-icon">🌤️</span>
-        Tarde
+        <span class="turno-icon">🌤️</span>Tarde
       </button>
       <button class="turno-btn" id="btnNoche" onclick="selectTurno('noche')">
-        <span class="turno-icon">🌙</span>
-        Noche
+        <span class="turno-icon">🌙</span>Noche
       </button>
     </div>
 
@@ -557,21 +517,25 @@
       INICIAR TURNO
     </button>
 
+    <div class="mqtt-sending" id="mqttSending">
+      ⬆ Enviando registro...
+    </div>
+
     <div class="error-msg" id="errorMsg">
-      ⚠ Legajo incorrecto. Verificá e intentá de nuevo.
+      ⚠ Verificá el legajo e intentá de nuevo.
     </div>
 
   </div>
 
   <!-- SUCCESS SCREEN -->
   <div class="success-screen" id="successScreen">
-    <div class="success-icon">✓</div>
+    <div class="success-icon inicio" id="successIcon">✓</div>
     <div class="success-name" id="successName">—</div>
     <div class="success-legajo" id="successLegajo">LEGAJO #—</div>
 
     <div class="success-details">
       <div class="detail-row">
-        <span class="detail-key">Máquina</span>
+        <span class="detail-key">ID Máquina</span>
         <span class="detail-val" id="detMaquina">—</span>
       </div>
       <div class="detail-row">
@@ -587,18 +551,26 @@
         <span class="detail-val" id="detFecha">—</span>
       </div>
       <div class="detail-row">
-        <span class="detail-key">Hora ingreso</span>
+        <span class="detail-key">Hora inicio</span>
         <span class="detail-val" id="detHora">—</span>
+      </div>
+      <div class="detail-row" id="rowHoraFin" style="display:none;">
+        <span class="detail-key">Hora fin</span>
+        <span class="detail-val" id="detHoraFin">—</span>
       </div>
     </div>
 
     <button class="btn-catinspect" onclick="abrirCatInspect()">
-      🐱 ABRIR CAT INSPECT
+      🔍 ABRIR CAT INSPECT
     </button>
 
-    <button class="btn-logout" onclick="cerrarTurno()">
-      FINALIZAR TURNO / CAMBIAR OPERADOR
+    <button class="btn-logout" onclick="finalizarTurno()">
+      FINALIZAR TURNO
     </button>
+
+    <div class="mqtt-sending" id="mqttSendingFin">
+      ⬆ Enviando cierre de turno...
+    </div>
   </div>
 
   <!-- CLOCK -->
@@ -608,154 +580,229 @@
 
 <script>
   // ==========================================
-  // CONFIGURACIÓN — EDITAR AQUÍ
+  // CONFIGURACIÓN
   // ==========================================
   const CONFIG = {
-    maquinaId: "5165",
+    maquinaId:    "5165",
     maquinaModelo: "826K",
-    catInspectUrl: "https://catinspectweb.cat.com"
+    catInspectUrl: "https://catinspectweb.cat.com",
+
+    // MQTT
+    mqttHost:     "200.16.78.8",
+    mqttPort:     8883,
+    mqttUsuario:  "juansandrada",      
+    mqttPassword: "794613Bb",   
+    mqttUseSSL:   true,
+
+    topicInicio:  "tecsan/turnos/inicio",
+    topicFin:     "tecsan/turnos/fin",
   };
 
-  // Base de datos de maquinistas
-  // AGREGAR más maquinistas aquí: { legajo: "XXXXX", nombre: "Nombre Apellido" }
+  // MAQUINISTAS — agregar legajos reales aquí
   const MAQUINISTAS = [
-    { legajo: "12184", nombre: "Operador Ejemplo" },
-    // Agregar más legajos aquí
+    { legajo: "12184", nombre: "Operador Prueba" },
+    // { legajo: "XXXXX", nombre: "Nombre Apellido" },
   ];
-
   // ==========================================
 
   let turnoSeleccionado = null;
-  let registros = JSON.parse(localStorage.getItem('registros_turno') || '[]');
+  let registroActual = null;
+  let mqttClient = null;
+  let mqttConectado = false;
 
-  // Detectar turno automático por hora
+  // ---- MQTT ----
+  function conectarMQTT() {
+    try {
+      const clientId = "tecsan_" + Math.random().toString(16).substr(2, 8);
+      mqttClient = new Paho.MQTT.Client(CONFIG.mqttHost, CONFIG.mqttPort, clientId);
+
+      mqttClient.onConnectionLost = function(r) {
+        mqttConectado = false;
+        setMqttStatus('error', 'Sin conexión');
+        setTimeout(conectarMQTT, 5000);
+      };
+
+      mqttClient.connect({
+        useSSL: CONFIG.mqttUseSSL,
+        userName: CONFIG.mqttUsuario,
+        password: CONFIG.mqttPassword,
+        onSuccess: function() {
+          mqttConectado = true;
+          setMqttStatus('conectado', 'MQTT Conectado');
+        },
+        onFailure: function(e) {
+          mqttConectado = false;
+          setMqttStatus('error', 'Error MQTT');
+          setTimeout(conectarMQTT, 5000);
+        }
+      });
+    } catch(e) {
+      setMqttStatus('error', 'Error MQTT');
+    }
+  }
+
+  function publicarMQTT(topic, payload, callbackOk) {
+    if (!mqttConectado || !mqttClient) {
+      if (callbackOk) callbackOk(false);
+      return;
+    }
+    try {
+      const msg = new Paho.MQTT.Message(JSON.stringify(payload));
+      msg.destinationName = topic;
+      msg.qos = 1;
+      mqttClient.send(msg);
+      if (callbackOk) callbackOk(true);
+    } catch(e) {
+      if (callbackOk) callbackOk(false);
+    }
+  }
+
+  function setMqttStatus(estado, texto) {
+    const dot = document.getElementById('mqttDot');
+    const label = document.getElementById('mqttLabel');
+    dot.className = 'mqtt-dot ' + estado;
+    label.textContent = texto;
+  }
+
+  // ---- TURNO ----
   function detectarTurno() {
-    const hora = new Date().getHours();
-    if (hora >= 6 && hora < 14) return 'manana';
-    if (hora >= 14 && hora < 22) return 'tarde';
+    const h = new Date().getHours();
+    if (h >= 6 && h < 14) return 'manana';
+    if (h >= 14 && h < 22) return 'tarde';
     return 'noche';
   }
 
-  function getTurnoInfo(turno) {
-    const info = {
-      manana: { label: 'Turno Mañana', color: 'var(--turno-manana)', emoji: '🌅' },
-      tarde:  { label: 'Turno Tarde',  color: 'var(--turno-tarde)',  emoji: '🌤️' },
-      noche:  { label: 'Turno Noche',  color: 'var(--turno-noche)',  emoji: '🌙' }
-    };
-    return info[turno];
+  function getTurnoInfo(t) {
+    return {
+      manana: { label: 'Turno Mañana', color: 'var(--tecsan-orange)', emoji: '🌅' },
+      tarde:  { label: 'Turno Tarde',  color: 'var(--tecsan-blue)',   emoji: '🌤️' },
+      noche:  { label: 'Turno Noche',  color: 'var(--tecsan-green)',  emoji: '🌙' },
+    }[t];
   }
 
-  function selectTurno(turno) {
-    turnoSeleccionado = turno;
+  function selectTurno(t) {
+    turnoSeleccionado = t;
     document.querySelectorAll('.turno-btn').forEach(b => b.className = 'turno-btn');
-    document.getElementById('btn' + turno.charAt(0).toUpperCase() + turno.slice(1))
-      .classList.add('active-' + turno);
-    const info = getTurnoInfo(turno);
+    document.getElementById('btn' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active-' + t);
+    const info = getTurnoInfo(t);
     document.getElementById('turnoDot').style.background = info.color;
     document.getElementById('turnoActualLabel').textContent = info.label;
   }
 
   function iniciarTurno() {
     const legajo = document.getElementById('legajoInput').value.trim();
-    const errorMsg = document.getElementById('errorMsg');
+    if (!legajo) { showError('Ingresá tu legajo.'); return; }
+    if (!turnoSeleccionado) { showError('Seleccioná el turno.'); return; }
 
-    if (!legajo) {
-      showError('Ingresá tu número de legajo.');
-      return;
-    }
-
-    if (!turnoSeleccionado) {
-      showError('Seleccioná el turno correspondiente.');
-      return;
-    }
-
-    // Buscar maquinista
     const maquinista = MAQUINISTAS.find(m => m.legajo === legajo);
-    
-    // Para pruebas: si el legajo no está en la lista, igual deja entrar
     const nombre = maquinista ? maquinista.nombre : `Legajo ${legajo}`;
 
-    errorMsg.classList.remove('show');
-
-    // Registrar
     const ahora = new Date();
-    const registro = {
+    registroActual = {
       legajo,
       nombre,
-      maquinaId: CONFIG.maquinaId,
+      maquinaId:    CONFIG.maquinaId,
       maquinaModelo: CONFIG.maquinaModelo,
-      turno: turnoSeleccionado,
-      fecha: ahora.toLocaleDateString('es-AR'),
-      hora: ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
-      timestamp: ahora.toISOString()
+      turno:        turnoSeleccionado,
+      fecha:        ahora.toLocaleDateString('es-AR'),
+      horaInicio:   ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+      timestamp:    ahora.toISOString(),
+      estado:       'inicio'
     };
 
-    registros.push(registro);
-    localStorage.setItem('registros_turno', JSON.stringify(registros));
+    // Mostrar enviando
+    document.getElementById('mqttSending').classList.add('show');
+    document.getElementById('btnIniciar').disabled = true;
 
-    mostrarExito(registro);
+    publicarMQTT(CONFIG.topicInicio, registroActual, function(ok) {
+      document.getElementById('mqttSending').classList.remove('show');
+      document.getElementById('btnIniciar').disabled = false;
+      mostrarExito(registroActual);
+    });
   }
 
-  function mostrarExito(r) {
-    document.getElementById('loginCard').classList.add('hide');
-    const s = document.getElementById('successScreen');
-    s.classList.add('show');
+  function finalizarTurno() {
+    if (!registroActual) { cerrarPantalla(); return; }
 
-    document.getElementById('successName').textContent = r.nombre.toUpperCase();
-    document.getElementById('successLegajo').textContent = `LEGAJO #${r.legajo}`;
-    document.getElementById('detMaquina').textContent = r.maquinaId;
-    document.getElementById('detModelo').textContent = r.maquinaModelo;
+    const ahora = new Date();
+    const payload = {
+      ...registroActual,
+      horaFin:   ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+      timestampFin: ahora.toISOString(),
+      estado:    'fin'
+    };
 
-    const info = getTurnoInfo(r.turno);
-    document.getElementById('detTurno').innerHTML = 
-      `<span style="color:${info.color}">${info.emoji} ${info.label}</span>`;
-    document.getElementById('detFecha').textContent = r.fecha;
-    document.getElementById('detHora').textContent = r.hora;
+    document.getElementById('mqttSendingFin').classList.add('show');
+
+    publicarMQTT(CONFIG.topicFin, payload, function(ok) {
+      document.getElementById('mqttSendingFin').classList.remove('show');
+
+      // Mostrar hora fin en pantalla
+      document.getElementById('rowHoraFin').style.display = 'flex';
+      document.getElementById('detHoraFin').textContent = payload.horaFin;
+      document.getElementById('successIcon').className = 'success-icon fin';
+      document.getElementById('successIcon').textContent = '⏹';
+
+      setTimeout(cerrarPantalla, 2000);
+    });
   }
 
-  function showError(msg) {
-    const errorMsg = document.getElementById('errorMsg');
-    errorMsg.textContent = `⚠ ${msg}`;
-    errorMsg.classList.add('show');
-    setTimeout(() => errorMsg.classList.remove('show'), 3000);
-  }
-
-  function abrirCatInspect() {
-    window.location.href = CONFIG.catInspectUrl;
-  }
-
-  function cerrarTurno() {
+  function cerrarPantalla() {
+    registroActual = null;
     document.getElementById('successScreen').classList.remove('show');
     document.getElementById('loginCard').classList.remove('hide');
+    document.getElementById('rowHoraFin').style.display = 'none';
     document.getElementById('legajoInput').value = '';
     turnoSeleccionado = null;
     document.querySelectorAll('.turno-btn').forEach(b => b.className = 'turno-btn');
     inicializarTurno();
   }
 
-  function inicializarTurno() {
-    const turnoAuto = detectarTurno();
-    selectTurno(turnoAuto);
+  function mostrarExito(r) {
+    document.getElementById('loginCard').classList.add('hide');
+    document.getElementById('successScreen').classList.add('show');
+    document.getElementById('successIcon').className = 'success-icon inicio';
+    document.getElementById('successIcon').textContent = '✓';
+    document.getElementById('successName').textContent = r.nombre.toUpperCase();
+    document.getElementById('successLegajo').textContent = `LEGAJO #${r.legajo}`;
+    document.getElementById('detMaquina').textContent = r.maquinaId;
+    document.getElementById('detModelo').textContent = r.maquinaModelo;
+    const info = getTurnoInfo(r.turno);
+    document.getElementById('detTurno').innerHTML = `<span style="color:${info.color}">${info.emoji} ${info.label}</span>`;
+    document.getElementById('detFecha').textContent = r.fecha;
+    document.getElementById('detHora').textContent = r.horaInicio;
   }
 
-  // Reloj en tiempo real
+  function showError(msg) {
+    const e = document.getElementById('errorMsg');
+    e.textContent = '⚠ ' + msg;
+    e.classList.add('show');
+    setTimeout(() => e.classList.remove('show'), 3000);
+  }
+
+  function abrirCatInspect() {
+    window.open(CONFIG.catInspectUrl, '_blank');
+  }
+
+  function inicializarTurno() {
+    selectTurno(detectarTurno());
+  }
+
   function actualizarReloj() {
     const ahora = new Date();
-    const fecha = ahora.toLocaleDateString('es-AR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-    const hora = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const fecha = ahora.toLocaleDateString('es-AR', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+    const hora  = ahora.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     document.getElementById('clockDisplay').textContent = `${fecha.toUpperCase()} — ${hora}`;
   }
 
-  // Cargar config en UI
-  document.getElementById('machineId').textContent = CONFIG.maquinaId;
+  // Init
+  document.getElementById('machineId').textContent    = CONFIG.maquinaId;
   document.getElementById('machineModel').textContent = CONFIG.maquinaModelo;
-
-  // Iniciar
   inicializarTurno();
   actualizarReloj();
   setInterval(actualizarReloj, 1000);
+  conectarMQTT();
 
-  // Enter en input
   document.getElementById('legajoInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') iniciarTurno();
   });
