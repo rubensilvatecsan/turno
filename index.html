@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Control de Turnos</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cat-yellow: #FFCD11;
+    --cat-black: #0A0A0A;
+    --cat-dark: #141414;
+    --cat-steel: #1E1E1E;
+    --cat-gray: #2E2E2E;
+    --cat-light: #8A8A8A;
+    --cat-white: #F5F5F0;
+    --turno-manana: #FFB300;
+    --turno-tarde: #FF6B35;
+    --turno-noche: #4A90D9;
+    --success: #4CAF50;
+    --danger: #E53935;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--cat-black);
+    color: var(--cat-white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,205,17,0.015) 40px,
+        rgba(255,205,17,0.015) 41px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,0.01) 40px,
+        rgba(255,255,255,0.01) 41px
+      );
+    pointer-events: none;
+  }
+
+  /* CAT stripe top */
+  .cat-stripe {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: var(--cat-yellow);
+    z-index: 100;
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .cat-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .cat-badge {
+    background: var(--cat-yellow);
+    color: var(--cat-black);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    padding: 4px 12px;
+    letter-spacing: 2px;
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 4px;
+    color: var(--cat-white);
+    line-height: 1;
+  }
+
+  .header .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--cat-light);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* TURNO INDICATOR */
+  .turno-actual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .turno-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .turno-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--cat-steel);
+    border: 1px solid var(--cat-gray);
+    border-top: 3px solid var(--cat-yellow);
+    padding: 28px 24px;
+    position: relative;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: 24px;
+    width: 40px;
+    height: 3px;
+    background: var(--cat-black);
+  }
+
+  /* MACHINE INFO */
+  .machine-info {
+    background: var(--cat-gray);
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-left: 3px solid var(--cat-yellow);
+  }
+
+  .machine-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--cat-light);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .machine-id {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--cat-yellow);
+    letter-spacing: 2px;
+  }
+
+  .machine-model {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--cat-white);
+    text-align: right;
+  }
+
+  /* FORM */
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cat-light);
+    margin-bottom: 8px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--cat-dark);
+    border: 1px solid var(--cat-gray);
+    border-bottom: 2px solid var(--cat-yellow);
+    color: var(--cat-white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px;
+    font-weight: 600;
+    padding: 14px 16px;
+    outline: none;
+    letter-spacing: 4px;
+    -webkit-appearance: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .field input:focus {
+    background: #1a1a1a;
+    border-bottom-color: var(--cat-white);
+  }
+
+  .field input::placeholder {
+    color: var(--cat-gray);
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  /* TURNO SELECTOR */
+  .turno-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .turno-btn {
+    background: var(--cat-dark);
+    border: 1px solid var(--cat-gray);
+    color: var(--cat-light);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 12px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .turno-btn .turno-icon {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .turno-btn.active-manana {
+    background: rgba(255, 179, 0, 0.15);
+    border-color: var(--turno-manana);
+    color: var(--turno-manana);
+  }
+
+  .turno-btn.active-tarde {
+    background: rgba(255, 107, 53, 0.15);
+    border-color: var(--turno-tarde);
+    color: var(--turno-tarde);
+  }
+
+  .turno-btn.active-noche {
+    background: rgba(74, 144, 217, 0.15);
+    border-color: var(--turno-noche);
+    color: var(--turno-noche);
+  }
+
+  /* SUBMIT BUTTON */
+  .btn-iniciar {
+    width: 100%;
+    background: var(--cat-yellow);
+    color: var(--cat-black);
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-appearance: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-iniciar:active {
+    transform: scale(0.98);
+    background: #e6b800;
+  }
+
+  .btn-iniciar:disabled {
+    background: var(--cat-gray);
+    color: var(--cat-light);
+    cursor: not-allowed;
+  }
+
+  /* ERROR */
+  .error-msg {
+    background: rgba(229, 57, 53, 0.1);
+    border: 1px solid var(--danger);
+    border-left: 3px solid var(--danger);
+    color: #ff6b6b;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .error-msg.show { display: block; animation: shake 0.4s ease; }
+
+  /* SUCCESS SCREEN */
+  .success-screen {
+    display: none;
+    text-align: center;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .success-screen.show { display: block; }
+  .card.hide { display: none; }
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+    animation: popIn 0.5s ease both;
+  }
+
+  .success-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 3px;
+    color: var(--cat-white);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .success-legajo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--cat-light);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+  }
+
+  .success-details {
+    background: var(--cat-steel);
+    border: 1px solid var(--cat-gray);
+    border-left: 3px solid var(--success);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--cat-gray);
+  }
+
+  .detail-row:last-child { border-bottom: none; }
+
+  .detail-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--cat-light);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .detail-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--cat-white);
+    font-weight: 600;
+  }
+
+  .turno-badge {
+    padding: 2px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+  }
+
+  .btn-catinspect {
+    width: 100%;
+    background: var(--cat-yellow);
+    color: var(--cat-black);
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+    padding: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+    transition: all 0.2s;
+  }
+
+  .btn-catinspect:active { transform: scale(0.98); }
+
+  .btn-logout {
+    width: 100%;
+    background: transparent;
+    color: var(--cat-light);
+    border: 1px solid var(--cat-gray);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: all 0.2s;
+  }
+
+  .btn-logout:active { background: var(--cat-gray); }
+
+  /* CLOCK */
+  .clock {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--cat-light);
+    text-align: center;
+    margin-top: 20px;
+    letter-spacing: 2px;
+    animation: fadeDown 0.6s 0.3s ease both;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cat-stripe"></div>
+
+<div class="app-container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="cat-logo">
+      <div class="cat-badge">CAT</div>
+    </div>
+    <h1>CONTROL DE TURNOS</h1>
+    <div class="subtitle">Sistema de registro de maquinistas</div>
+  </div>
+
+  <!-- TURNO ACTUAL -->
+  <div class="turno-actual" id="turnoActualDisplay">
+    <div class="turno-dot" id="turnoDot" style="background: var(--turno-manana)"></div>
+    <span class="turno-label" id="turnoActualLabel">Turno Mañana</span>
+  </div>
+
+  <!-- LOGIN CARD -->
+  <div class="card" id="loginCard">
+
+    <div class="machine-info">
+      <div>
+        <span class="machine-label">Máquina</span>
+        <span class="machine-id" id="machineId">5165</span>
+      </div>
+      <div class="machine-model" id="machineModel">826K</div>
+    </div>
+
+    <div class="field">
+      <label>Legajo del maquinista</label>
+      <input 
+        type="number" 
+        id="legajoInput" 
+        placeholder="00000" 
+        maxlength="10"
+        inputmode="numeric"
+        autocomplete="off"
+      />
+    </div>
+
+    <div style="margin-bottom: 8px;">
+      <label style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--cat-light); display: block; margin-bottom: 8px;">Turno</label>
+    </div>
+
+    <div class="turno-selector">
+      <button class="turno-btn" id="btnManana" onclick="selectTurno('manana')">
+        <span class="turno-icon">🌅</span>
+        Mañana
+      </button>
+      <button class="turno-btn" id="btnTarde" onclick="selectTurno('tarde')">
+        <span class="turno-icon">🌤️</span>
+        Tarde
+      </button>
+      <button class="turno-btn" id="btnNoche" onclick="selectTurno('noche')">
+        <span class="turno-icon">🌙</span>
+        Noche
+      </button>
+    </div>
+
+    <button class="btn-iniciar" id="btnIniciar" onclick="iniciarTurno()">
+      INICIAR TURNO
+    </button>
+
+    <div class="error-msg" id="errorMsg">
+      ⚠ Legajo incorrecto. Verificá e intentá de nuevo.
+    </div>
+
+  </div>
+
+  <!-- SUCCESS SCREEN -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <div class="success-name" id="successName">—</div>
+    <div class="success-legajo" id="successLegajo">LEGAJO #—</div>
+
+    <div class="success-details">
+      <div class="detail-row">
+        <span class="detail-key">Máquina</span>
+        <span class="detail-val" id="detMaquina">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">Modelo</span>
+        <span class="detail-val" id="detModelo">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">Turno</span>
+        <span class="detail-val" id="detTurno">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">Fecha</span>
+        <span class="detail-val" id="detFecha">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">Hora ingreso</span>
+        <span class="detail-val" id="detHora">—</span>
+      </div>
+    </div>
+
+    <button class="btn-catinspect" onclick="abrirCatInspect()">
+      🐱 ABRIR CAT INSPECT
+    </button>
+
+    <button class="btn-logout" onclick="cerrarTurno()">
+      FINALIZAR TURNO / CAMBIAR OPERADOR
+    </button>
+  </div>
+
+  <!-- CLOCK -->
+  <div class="clock" id="clockDisplay">—</div>
+
+</div>
+
+<script>
+  // ==========================================
+  // CONFIGURACIÓN — EDITAR AQUÍ
+  // ==========================================
+  const CONFIG = {
+    maquinaId: "5165",
+    maquinaModelo: "826K",
+    catInspectUrl: "https://catinspectweb.cat.com"
+  };
+
+  // Base de datos de maquinistas
+  // AGREGAR más maquinistas aquí: { legajo: "XXXXX", nombre: "Nombre Apellido" }
+  const MAQUINISTAS = [
+    { legajo: "12184", nombre: "Operador Ejemplo" },
+    // Agregar más legajos aquí
+  ];
+
+  // ==========================================
+
+  let turnoSeleccionado = null;
+  let registros = JSON.parse(localStorage.getItem('registros_turno') || '[]');
+
+  // Detectar turno automático por hora
+  function detectarTurno() {
+    const hora = new Date().getHours();
+    if (hora >= 6 && hora < 14) return 'manana';
+    if (hora >= 14 && hora < 22) return 'tarde';
+    return 'noche';
+  }
+
+  function getTurnoInfo(turno) {
+    const info = {
+      manana: { label: 'Turno Mañana', color: 'var(--turno-manana)', emoji: '🌅' },
+      tarde:  { label: 'Turno Tarde',  color: 'var(--turno-tarde)',  emoji: '🌤️' },
+      noche:  { label: 'Turno Noche',  color: 'var(--turno-noche)',  emoji: '🌙' }
+    };
+    return info[turno];
+  }
+
+  function selectTurno(turno) {
+    turnoSeleccionado = turno;
+    document.querySelectorAll('.turno-btn').forEach(b => b.className = 'turno-btn');
+    document.getElementById('btn' + turno.charAt(0).toUpperCase() + turno.slice(1))
+      .classList.add('active-' + turno);
+    const info = getTurnoInfo(turno);
+    document.getElementById('turnoDot').style.background = info.color;
+    document.getElementById('turnoActualLabel').textContent = info.label;
+  }
+
+  function iniciarTurno() {
+    const legajo = document.getElementById('legajoInput').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+
+    if (!legajo) {
+      showError('Ingresá tu número de legajo.');
+      return;
+    }
+
+    if (!turnoSeleccionado) {
+      showError('Seleccioná el turno correspondiente.');
+      return;
+    }
+
+    // Buscar maquinista
+    const maquinista = MAQUINISTAS.find(m => m.legajo === legajo);
+    
+    // Para pruebas: si el legajo no está en la lista, igual deja entrar
+    const nombre = maquinista ? maquinista.nombre : `Legajo ${legajo}`;
+
+    errorMsg.classList.remove('show');
+
+    // Registrar
+    const ahora = new Date();
+    const registro = {
+      legajo,
+      nombre,
+      maquinaId: CONFIG.maquinaId,
+      maquinaModelo: CONFIG.maquinaModelo,
+      turno: turnoSeleccionado,
+      fecha: ahora.toLocaleDateString('es-AR'),
+      hora: ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: ahora.toISOString()
+    };
+
+    registros.push(registro);
+    localStorage.setItem('registros_turno', JSON.stringify(registros));
+
+    mostrarExito(registro);
+  }
+
+  function mostrarExito(r) {
+    document.getElementById('loginCard').classList.add('hide');
+    const s = document.getElementById('successScreen');
+    s.classList.add('show');
+
+    document.getElementById('successName').textContent = r.nombre.toUpperCase();
+    document.getElementById('successLegajo').textContent = `LEGAJO #${r.legajo}`;
+    document.getElementById('detMaquina').textContent = r.maquinaId;
+    document.getElementById('detModelo').textContent = r.maquinaModelo;
+
+    const info = getTurnoInfo(r.turno);
+    document.getElementById('detTurno').innerHTML = 
+      `<span style="color:${info.color}">${info.emoji} ${info.label}</span>`;
+    document.getElementById('detFecha').textContent = r.fecha;
+    document.getElementById('detHora').textContent = r.hora;
+  }
+
+  function showError(msg) {
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.textContent = `⚠ ${msg}`;
+    errorMsg.classList.add('show');
+    setTimeout(() => errorMsg.classList.remove('show'), 3000);
+  }
+
+  function abrirCatInspect() {
+    window.location.href = CONFIG.catInspectUrl;
+  }
+
+  function cerrarTurno() {
+    document.getElementById('successScreen').classList.remove('show');
+    document.getElementById('loginCard').classList.remove('hide');
+    document.getElementById('legajoInput').value = '';
+    turnoSeleccionado = null;
+    document.querySelectorAll('.turno-btn').forEach(b => b.className = 'turno-btn');
+    inicializarTurno();
+  }
+
+  function inicializarTurno() {
+    const turnoAuto = detectarTurno();
+    selectTurno(turnoAuto);
+  }
+
+  // Reloj en tiempo real
+  function actualizarReloj() {
+    const ahora = new Date();
+    const fecha = ahora.toLocaleDateString('es-AR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const hora = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('clockDisplay').textContent = `${fecha.toUpperCase()} — ${hora}`;
+  }
+
+  // Cargar config en UI
+  document.getElementById('machineId').textContent = CONFIG.maquinaId;
+  document.getElementById('machineModel').textContent = CONFIG.maquinaModelo;
+
+  // Iniciar
+  inicializarTurno();
+  actualizarReloj();
+  setInterval(actualizarReloj, 1000);
+
+  // Enter en input
+  document.getElementById('legajoInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') iniciarTurno();
+  });
+</script>
+
+</body>
+</html>
