@@ -140,7 +140,7 @@
   };
 
   const MAQUINISTAS = [
-    { legajo: '12182', nombre: 'Ruben Silva' }
+    { legajo: '12182', nombre: 'Ruben Silva' },
     { legajo: '12183', nombre: 'Pepe Tero' }
   ];
 
@@ -148,7 +148,7 @@
 
   function enviarASheets(data, callback) {
     var params = Object.keys(data)
-      .map(k => k + '=' + encodeURIComponent(data[k]))
+      .map(function(k) { return k + '=' + encodeURIComponent(data[k]); })
       .join('&');
     var url = CONFIG.sheetsUrl + '?' + params;
     var img = new Image();
@@ -172,7 +172,7 @@
 
   function selectTurno(t) {
     turno = t;
-    document.querySelectorAll('.turno-btn').forEach(b=>b.className='turno-btn');
+    document.querySelectorAll('.turno-btn').forEach(function(b){b.className='turno-btn';});
     document.getElementById('btn'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active-'+t);
     var info = getTurnoInfo(t);
     document.getElementById('turnoDot').style.background = info.color;
@@ -183,16 +183,20 @@
     var legajo = document.getElementById('legajoInput').value.trim();
     if (!legajo) { showError('Ingresá tu legajo.'); return; }
     if (!turno)  { showError('Seleccioná el turno.'); return; }
-    var maq = MAQUINISTAS.find(m=>m.legajo===legajo);
+    var maq = MAQUINISTAS.find(function(m){return m.legajo===legajo;});
     var nombre = maq ? maq.nombre : 'Legajo '+legajo;
     var ahora = new Date();
     registro = {
-      legajo, nombre,
+      legajo: legajo,
+      nombre: nombre,
       maquinaId: CONFIG.maquinaId,
       maquinaModelo: CONFIG.maquinaModelo,
-      turno, fecha: ahora.toLocaleDateString('es-AR'),
+      turno: turno,
+      fecha: ahora.toLocaleDateString('es-AR'),
       horaInicio: ahora.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}),
-      horaFin: '', estado: 'inicio', timestamp: ahora.toISOString()
+      horaFin: '',
+      estado: 'inicio',
+      timestamp: ahora.toISOString()
     };
     document.getElementById('enviando').classList.add('show');
     document.getElementById('btnIniciar').disabled = true;
@@ -229,7 +233,7 @@
     document.getElementById('legajoInput').value='';
     document.getElementById('statusLabel').textContent='Listo';
     document.getElementById('statusDot').className='status-dot';
-    document.querySelectorAll('.turno-btn').forEach(b=>b.className='turno-btn');
+    document.querySelectorAll('.turno-btn').forEach(function(b){b.className='turno-btn';});
     selectTurno(detectarTurno());
   }
 
@@ -251,7 +255,7 @@
   function showError(msg) {
     var e=document.getElementById('errorMsg');
     e.textContent='⚠ '+msg; e.classList.add('show');
-    setTimeout(()=>e.classList.remove('show'),3000);
+    setTimeout(function(){e.classList.remove('show');},3000);
   }
 
   function reloj() {
