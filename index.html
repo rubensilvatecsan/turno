@@ -17,78 +17,63 @@
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { background:var(--tecsan-bg); color:var(--tecsan-white); font-family:Arial,sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
-  body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at top left,rgba(27,111,200,0.08) 0%,transparent 50%),radial-gradient(ellipse at bottom right,rgba(31,175,110,0.06) 0%,transparent 50%); pointer-events:none; }
   .top-bar { position:fixed; top:0; left:0; right:0; height:5px; display:flex; z-index:100; }
   .top-bar .b1 { flex:1; background:var(--tecsan-blue); }
   .top-bar .b2 { flex:1; background:var(--tecsan-green); }
   .top-bar .b3 { flex:1; background:var(--tecsan-orange); }
-  .app-container { width:100%; max-width:420px; padding:20px; position:relative; z-index:10; }
-  .header { text-align:center; margin-bottom:20px; animation:fadeDown 0.5s ease both; }
+  .app-container { width:100%; max-width:420px; padding:20px; }
+  .header { text-align:center; margin-bottom:20px; }
   .logo-svg { width:160px; height:auto; margin-bottom:8px; }
-  .header .subtitle { font-size:11px; color:var(--tecsan-light); letter-spacing:3px; text-transform:uppercase; }
-  .sheets-status { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:16px; }
+  .subtitle { font-size:11px; color:var(--tecsan-light); letter-spacing:3px; text-transform:uppercase; }
+  .status-bar { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:16px; }
   .status-dot { width:8px; height:8px; border-radius:50%; background:var(--tecsan-green); animation:pulse 2s infinite; }
   .status-dot.error { background:var(--danger); animation:none; }
   .status-label { font-size:10px; color:var(--tecsan-light); letter-spacing:2px; text-transform:uppercase; }
   .turno-actual { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:16px; }
   .turno-dot { width:8px; height:8px; border-radius:50%; animation:pulse 2s infinite; }
   .turno-label { font-size:11px; color:var(--tecsan-light); letter-spacing:2px; text-transform:uppercase; }
-  .card { background:var(--tecsan-gray); border:1px solid #444; border-top:3px solid var(--tecsan-blue); padding:24px 20px; animation:fadeUp 0.5s 0.2s ease both; }
+  .card { background:var(--tecsan-gray); border:1px solid #444; border-top:3px solid var(--tecsan-blue); padding:24px 20px; }
   .machine-info { background:#2a2a2a; padding:10px 14px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; border-left:3px solid var(--tecsan-orange); }
   .machine-label { font-size:9px; color:var(--tecsan-light); letter-spacing:2px; text-transform:uppercase; display:block; margin-bottom:2px; }
   .machine-id { font-size:20px; font-weight:bold; color:var(--tecsan-orange); letter-spacing:2px; }
   .machine-model { font-size:13px; color:var(--tecsan-white); font-weight:bold; }
   .field { margin-bottom:18px; }
   .field label { display:block; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--tecsan-light); margin-bottom:8px; }
-  .field input { width:100%; background:#222; border:1px solid #444; border-bottom:2px solid var(--tecsan-blue); color:var(--tecsan-white); font-size:26px; font-weight:bold; padding:12px 14px; outline:none; letter-spacing:4px; -webkit-appearance:none; transition:border-color 0.2s; }
-  .field input:focus { border-bottom-color:var(--tecsan-green); }
-  .field input::placeholder { color:#444; font-size:20px; }
+  .field input { width:100%; background:#222; border:1px solid #444; border-bottom:2px solid var(--tecsan-blue); color:var(--tecsan-white); font-size:26px; font-weight:bold; padding:12px 14px; outline:none; letter-spacing:4px; -webkit-appearance:none; }
   .turno-selector { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
-  .turno-btn { background:#222; border:1px solid #444; color:var(--tecsan-light); font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:12px 6px; cursor:pointer; text-align:center; transition:all 0.2s; -webkit-appearance:none; }
-  .turno-btn .turno-icon { display:block; font-size:20px; margin-bottom:4px; }
+  .turno-btn { background:#222; border:1px solid #444; color:var(--tecsan-light); font-size:10px; text-transform:uppercase; padding:12px 6px; cursor:pointer; text-align:center; -webkit-appearance:none; }
+  .turno-btn .icon { display:block; font-size:20px; margin-bottom:4px; }
   .turno-btn.active-manana { background:rgba(245,166,35,0.15); border-color:var(--tecsan-orange); color:var(--tecsan-orange); }
   .turno-btn.active-tarde  { background:rgba(27,111,200,0.15);  border-color:var(--tecsan-blue);   color:var(--tecsan-blue); }
   .turno-btn.active-noche  { background:rgba(31,175,110,0.15);  border-color:var(--tecsan-green);  color:var(--tecsan-green); }
-  .btn-iniciar { width:100%; background:var(--tecsan-blue); color:white; border:none; font-size:18px; font-weight:bold; letter-spacing:3px; padding:16px; cursor:pointer; transition:all 0.2s; -webkit-appearance:none; text-transform:uppercase; }
-  .btn-iniciar:active { background:#1558a0; transform:scale(0.98); }
-  .btn-iniciar:disabled { background:#444; color:var(--tecsan-light); cursor:not-allowed; }
-  .enviando { display:none; align-items:center; justify-content:center; gap:8px; margin-top:12px; font-size:11px; color:var(--tecsan-green); letter-spacing:2px; text-transform:uppercase; }
-  .enviando.show { display:flex; }
+  .btn-iniciar { width:100%; background:var(--tecsan-blue); color:white; border:none; font-size:18px; font-weight:bold; letter-spacing:3px; padding:16px; cursor:pointer; text-transform:uppercase; }
+  .btn-iniciar:disabled { background:#444; color:var(--tecsan-light); }
+  .enviando { display:none; text-align:center; margin-top:12px; font-size:11px; color:var(--tecsan-green); letter-spacing:2px; text-transform:uppercase; }
+  .enviando.show { display:block; }
   .error-msg { background:rgba(229,57,53,0.1); border-left:3px solid var(--danger); color:#ff6b6b; font-size:11px; padding:10px 14px; margin-top:12px; display:none; }
-  .error-msg.show { display:block; animation:shake 0.4s ease; }
-  .success-screen { display:none; text-align:center; animation:fadeUp 0.5s ease both; }
+  .error-msg.show { display:block; }
+  .success-screen { display:none; text-align:center; }
   .success-screen.show { display:block; }
   .card.hide { display:none; }
-  .success-icon { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 16px; animation:popIn 0.5s ease both; }
+  .success-icon { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 16px; }
   .success-icon.inicio { background:var(--tecsan-green); }
   .success-icon.fin    { background:var(--tecsan-orange); }
   .success-name { font-size:30px; font-weight:bold; letter-spacing:2px; margin-bottom:4px; }
   .success-legajo { font-size:12px; color:var(--tecsan-light); letter-spacing:3px; margin-bottom:16px; }
   .success-details { background:var(--tecsan-gray); border:1px solid #444; border-left:3px solid var(--tecsan-green); padding:14px 18px; margin-bottom:20px; text-align:left; }
-  .detail-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #444; }
+  .detail-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #444; }
   .detail-row:last-child { border-bottom:none; }
   .detail-key { font-size:9px; color:var(--tecsan-light); letter-spacing:2px; text-transform:uppercase; }
   .detail-val { font-size:13px; color:var(--tecsan-white); font-weight:bold; }
-  .btn-catinspect { width:100%; background:var(--tecsan-green); color:white; border:none; font-size:15px; font-weight:bold; letter-spacing:2px; padding:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; -webkit-appearance:none; transition:all 0.2s; text-transform:uppercase; }
-  .btn-catinspect:active { background:#178a56; }
-  .btn-logout { width:100%; background:transparent; color:var(--tecsan-light); border:1px solid #444; font-size:11px; letter-spacing:2px; text-transform:uppercase; padding:12px; cursor:pointer; -webkit-appearance:none; transition:all 0.2s; }
-  .btn-logout:active { background:#444; }
+  .btn-catinspect { width:100%; background:var(--tecsan-green); color:white; border:none; font-size:15px; font-weight:bold; letter-spacing:2px; padding:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; text-transform:uppercase; }
+  .btn-logout { width:100%; background:transparent; color:var(--tecsan-light); border:1px solid #444; font-size:11px; letter-spacing:2px; text-transform:uppercase; padding:12px; cursor:pointer; }
   .clock { font-size:11px; color:var(--tecsan-light); text-align:center; margin-top:16px; letter-spacing:2px; }
-  @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fadeUp   { from{opacity:0;transform:translateY(12px)}  to{opacity:1;transform:translateY(0)} }
-  @keyframes pulse    { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
-  @keyframes shake    { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
-  @keyframes popIn    { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 </style>
 </head>
 <body>
-
-<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-
 <div class="top-bar"><div class="b1"></div><div class="b2"></div><div class="b3"></div></div>
-
 <div class="app-container">
-
   <div class="header">
     <svg class="logo-svg" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
       <g transform="translate(10,8)">
@@ -98,50 +83,37 @@
         <path d="M8,46 A28,28 0 0,1 8,18 L20,26 A14,14 0 0,0 20,38 Z" fill="#555"/>
         <circle cx="32" cy="32" r="10" fill="#1A1A1A"/>
       </g>
-      <text x="80" y="52" font-family="Arial Black,Arial" font-weight="900" font-size="36" fill="#F8F8F8" letter-spacing="2">TECSAN</text>
+      <text x="80" y="52" font-family="Arial Black,Arial" font-weight="900" font-size="36" fill="#F8F8F8">TECSAN</text>
     </svg>
     <div class="subtitle">Control de Turnos — Maquinistas</div>
   </div>
-
-  <div class="sheets-status">
+  <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
     <span class="status-label" id="statusLabel">Listo</span>
   </div>
-
   <div class="turno-actual">
     <div class="turno-dot" id="turnoDot"></div>
-    <span class="turno-label" id="turnoActualLabel">—</span>
+    <span class="turno-label" id="turnoLabel">—</span>
   </div>
-
   <div class="card" id="loginCard">
     <div class="machine-info">
-      <div>
-        <span class="machine-label">ID Máquina</span>
-        <span class="machine-id" id="machineId">5165</span>
-      </div>
+      <div><span class="machine-label">ID Máquina</span><span class="machine-id" id="machineId">5165</span></div>
       <div class="machine-model" id="machineModel">826K</div>
     </div>
-
     <div class="field">
       <label>Legajo del operador</label>
       <input type="number" id="legajoInput" placeholder="00000" inputmode="numeric" autocomplete="off"/>
     </div>
-
-    <div style="margin-bottom:8px;">
-      <label style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--tecsan-light);display:block;margin-bottom:8px;">Turno</label>
-    </div>
-
+    <div style="margin-bottom:8px;"><label style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#6B6B6B;display:block;margin-bottom:8px;">Turno</label></div>
     <div class="turno-selector">
-      <button class="turno-btn" id="btnManana" onclick="selectTurno('manana')"><span class="turno-icon">🌅</span>Mañana</button>
-      <button class="turno-btn" id="btnTarde"  onclick="selectTurno('tarde')"><span class="turno-icon">🌤️</span>Tarde</button>
-      <button class="turno-btn" id="btnNoche"  onclick="selectTurno('noche')"><span class="turno-icon">🌙</span>Noche</button>
+      <button class="turno-btn" id="btnManana" onclick="selectTurno('manana')"><span class="icon">🌅</span>Mañana</button>
+      <button class="turno-btn" id="btnTarde"  onclick="selectTurno('tarde')"><span class="icon">🌤️</span>Tarde</button>
+      <button class="turno-btn" id="btnNoche"  onclick="selectTurno('noche')"><span class="icon">🌙</span>Noche</button>
     </div>
-
     <button class="btn-iniciar" id="btnIniciar" onclick="iniciarTurno()">INICIAR TURNO</button>
     <div class="enviando" id="enviando">⬆ Registrando...</div>
-    <div class="error-msg" id="errorMsg">⚠ Verificá el legajo e intentá de nuevo.</div>
+    <div class="error-msg" id="errorMsg"></div>
   </div>
-
   <div class="success-screen" id="successScreen">
     <div class="success-icon inicio" id="successIcon">✓</div>
     <div class="success-name" id="successName">—</div>
@@ -154,173 +126,145 @@
       <div class="detail-row"><span class="detail-key">Hora inicio</span><span class="detail-val" id="detHora">—</span></div>
       <div class="detail-row" id="rowFin" style="display:none;"><span class="detail-key">Hora fin</span><span class="detail-val" id="detHoraFin">—</span></div>
     </div>
-    <button class="btn-catinspect" onclick="abrirCatInspect()">🔍 ABRIR CAT INSPECT</button>
+    <button class="btn-catinspect" onclick="window.open('https://catinspectweb.cat.com','_blank')">🔍 ABRIR CAT INSPECT</button>
     <button class="btn-logout" onclick="finalizarTurno()">FINALIZAR TURNO</button>
     <div class="enviando" id="enviandoFin">⬆ Cerrando turno...</div>
   </div>
-
-  <div class="clock" id="clockDisplay">—</div>
+  <div class="clock" id="clock">—</div>
 </div>
-
 <script>
   const CONFIG = {
-    maquinaId:     "5165",
-    maquinaModelo: "826K",
-    catInspectUrl: "https://catinspectweb.cat.com",
-    sheetsUrl:     "https://script.google.com/macros/s/AKfycbxUOgO5vnBqP0cqWDSYSIYD9bm8YUHps-B2DWxSyNFNNrnbOWyUHdyoKZekiRBE0lLP/exec"
+    maquinaId: '5165',
+    maquinaModelo: '826K',
+    sheetsUrl: 'https://script.google.com/macros/s/AKfycbxUOgO5vnBqP0cqWDSYSIYD9bm8YUHps-B2DWxSyNFNNrnbOWyUHdyoKZekiRBE0lLP/exec'
   };
 
   const MAQUINISTAS = [
-    { legajo: "12184", nombre: "Operador Prueba" },
+    { legajo: '12184', nombre: 'Operador Prueba' }
   ];
 
-  let turnoSeleccionado = null;
-  let registroActual = null;
+  let turno = null, registro = null;
 
   function enviarASheets(data, callback) {
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = CONFIG.sheetsUrl;
-    form.target = 'hidden_iframe';
-    form.style.display = 'none';
-
-    Object.keys(data).forEach(function(key) {
-      var input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = data[key];
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-    setTimeout(function() { callback(true); }, 2000);
+    var params = Object.keys(data)
+      .map(k => k + '=' + encodeURIComponent(data[k]))
+      .join('&');
+    var url = CONFIG.sheetsUrl + '?' + params;
+    var img = new Image();
+    img.onload = function() { callback(true); };
+    img.onerror = function() { callback(true); };
+    img.src = url;
   }
 
   function detectarTurno() {
     var h = new Date().getHours();
-    if (h >= 6 && h < 14) return 'manana';
-    if (h >= 14 && h < 22) return 'tarde';
-    return 'noche';
+    return h>=6&&h<14?'manana':h>=14&&h<22?'tarde':'noche';
   }
 
   function getTurnoInfo(t) {
-    return { manana:{label:'Turno Mañana',color:'var(--tecsan-orange)',emoji:'🌅'}, tarde:{label:'Turno Tarde',color:'var(--tecsan-blue)',emoji:'🌤️'}, noche:{label:'Turno Noche',color:'var(--tecsan-green)',emoji:'🌙'} }[t];
+    return {
+      manana:{label:'Turno Mañana',color:'#F5A623',emoji:'🌅'},
+      tarde: {label:'Turno Tarde', color:'#1B6FC8',emoji:'🌤️'},
+      noche: {label:'Turno Noche', color:'#1FAF6E',emoji:'🌙'}
+    }[t];
   }
 
   function selectTurno(t) {
-    turnoSeleccionado = t;
-    document.querySelectorAll('.turno-btn').forEach(function(b){ b.className='turno-btn'; });
+    turno = t;
+    document.querySelectorAll('.turno-btn').forEach(b=>b.className='turno-btn');
     document.getElementById('btn'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active-'+t);
     var info = getTurnoInfo(t);
     document.getElementById('turnoDot').style.background = info.color;
-    document.getElementById('turnoActualLabel').textContent = info.label;
+    document.getElementById('turnoLabel').textContent = info.label;
   }
 
   function iniciarTurno() {
     var legajo = document.getElementById('legajoInput').value.trim();
     if (!legajo) { showError('Ingresá tu legajo.'); return; }
-    if (!turnoSeleccionado) { showError('Seleccioná el turno.'); return; }
-
-    var maquinista = MAQUINISTAS.find(function(m){ return m.legajo === legajo; });
-    var nombre = maquinista ? maquinista.nombre : 'Legajo '+legajo;
+    if (!turno)  { showError('Seleccioná el turno.'); return; }
+    var maq = MAQUINISTAS.find(m=>m.legajo===legajo);
+    var nombre = maq ? maq.nombre : 'Legajo '+legajo;
     var ahora = new Date();
-
-    registroActual = {
-      legajo: legajo,
-      nombre: nombre,
+    registro = {
+      legajo, nombre,
       maquinaId: CONFIG.maquinaId,
       maquinaModelo: CONFIG.maquinaModelo,
-      turno: turnoSeleccionado,
-      fecha: ahora.toLocaleDateString('es-AR'),
+      turno, fecha: ahora.toLocaleDateString('es-AR'),
       horaInicio: ahora.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}),
-      horaFin: '',
-      estado: 'inicio',
-      timestamp: ahora.toISOString()
+      horaFin: '', estado: 'inicio', timestamp: ahora.toISOString()
     };
-
     document.getElementById('enviando').classList.add('show');
     document.getElementById('btnIniciar').disabled = true;
-    document.getElementById('statusLabel').textContent = 'Registrando...';
-
-    enviarASheets(registroActual, function(ok) {
+    enviarASheets(registro, function() {
       document.getElementById('enviando').classList.remove('show');
       document.getElementById('btnIniciar').disabled = false;
       document.getElementById('statusLabel').textContent = 'Registrado ✓';
       document.getElementById('statusDot').className = 'status-dot';
-      mostrarExito(registroActual);
+      mostrarExito(registro);
     });
   }
 
   function finalizarTurno() {
-    if (!registroActual) { cerrarPantalla(); return; }
+    if (!registro) { cerrar(); return; }
     var ahora = new Date();
-    registroActual.horaFin = ahora.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-    registroActual.estado = 'fin';
+    registro.horaFin = ahora.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    registro.estado = 'fin';
     document.getElementById('enviandoFin').classList.add('show');
-    enviarASheets(registroActual, function() {
+    enviarASheets(registro, function() {
       document.getElementById('enviandoFin').classList.remove('show');
-      document.getElementById('rowFin').style.display = 'flex';
-      document.getElementById('detHoraFin').textContent = registroActual.horaFin;
-      document.getElementById('successIcon').className = 'success-icon fin';
-      document.getElementById('successIcon').textContent = '⏹';
-      setTimeout(cerrarPantalla, 2000);
+      document.getElementById('rowFin').style.display='flex';
+      document.getElementById('detHoraFin').textContent=registro.horaFin;
+      document.getElementById('successIcon').className='success-icon fin';
+      document.getElementById('successIcon').textContent='⏹';
+      setTimeout(cerrar, 2000);
     });
   }
 
-  function cerrarPantalla() {
-    registroActual = null;
+  function cerrar() {
+    registro=null; turno=null;
     document.getElementById('successScreen').classList.remove('show');
     document.getElementById('loginCard').classList.remove('hide');
-    document.getElementById('rowFin').style.display = 'none';
-    document.getElementById('legajoInput').value = '';
-    turnoSeleccionado = null;
-    document.querySelectorAll('.turno-btn').forEach(function(b){ b.className='turno-btn'; });
-    document.getElementById('statusLabel').textContent = 'Listo';
-    document.getElementById('statusDot').className = 'status-dot';
-    inicializarTurno();
+    document.getElementById('rowFin').style.display='none';
+    document.getElementById('legajoInput').value='';
+    document.getElementById('statusLabel').textContent='Listo';
+    document.getElementById('statusDot').className='status-dot';
+    document.querySelectorAll('.turno-btn').forEach(b=>b.className='turno-btn');
+    selectTurno(detectarTurno());
   }
 
   function mostrarExito(r) {
     document.getElementById('loginCard').classList.add('hide');
     document.getElementById('successScreen').classList.add('show');
-    document.getElementById('successIcon').className = 'success-icon inicio';
-    document.getElementById('successIcon').textContent = '✓';
-    document.getElementById('successName').textContent = r.nombre.toUpperCase();
-    document.getElementById('successLegajo').textContent = 'LEGAJO #'+r.legajo;
-    document.getElementById('detMaquina').textContent = r.maquinaId;
-    document.getElementById('detModelo').textContent = r.maquinaModelo;
-    var info = getTurnoInfo(r.turno);
-    document.getElementById('detTurno').innerHTML = '<span style="color:'+info.color+'">'+info.emoji+' '+info.label+'</span>';
-    document.getElementById('detFecha').textContent = r.fecha;
-    document.getElementById('detHora').textContent = r.horaInicio;
+    document.getElementById('successIcon').className='success-icon inicio';
+    document.getElementById('successIcon').textContent='✓';
+    document.getElementById('successName').textContent=r.nombre.toUpperCase();
+    document.getElementById('successLegajo').textContent='LEGAJO #'+r.legajo;
+    document.getElementById('detMaquina').textContent=r.maquinaId;
+    document.getElementById('detModelo').textContent=r.maquinaModelo;
+    var info=getTurnoInfo(r.turno);
+    document.getElementById('detTurno').innerHTML='<span style="color:'+info.color+'">'+info.emoji+' '+info.label+'</span>';
+    document.getElementById('detFecha').textContent=r.fecha;
+    document.getElementById('detHora').textContent=r.horaInicio;
   }
 
   function showError(msg) {
-    var e = document.getElementById('errorMsg');
-    e.textContent = '⚠ '+msg;
-    e.classList.add('show');
-    setTimeout(function(){ e.classList.remove('show'); }, 3000);
+    var e=document.getElementById('errorMsg');
+    e.textContent='⚠ '+msg; e.classList.add('show');
+    setTimeout(()=>e.classList.remove('show'),3000);
   }
 
-  function abrirCatInspect() { window.open(CONFIG.catInspectUrl,'_blank'); }
-
-  function inicializarTurno() { selectTurno(detectarTurno()); }
-
-  function actualizarReloj() {
-    var ahora = new Date();
-    document.getElementById('clockDisplay').textContent =
-      ahora.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase()+
-      ' — '+ahora.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  function reloj() {
+    var a=new Date();
+    document.getElementById('clock').textContent=
+      a.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase()+
+      ' — '+a.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   }
 
-  document.getElementById('machineId').textContent = CONFIG.maquinaId;
-  document.getElementById('machineModel').textContent = CONFIG.maquinaModelo;
-  inicializarTurno();
-  actualizarReloj();
-  setInterval(actualizarReloj, 1000);
-  document.getElementById('legajoInput').addEventListener('keypress', function(e){ if(e.key==='Enter') iniciarTurno(); });
+  document.getElementById('machineId').textContent=CONFIG.maquinaId;
+  document.getElementById('machineModel').textContent=CONFIG.maquinaModelo;
+  selectTurno(detectarTurno());
+  reloj(); setInterval(reloj,1000);
+  document.getElementById('legajoInput').addEventListener('keypress',function(e){if(e.key==='Enter')iniciarTurno();});
 </script>
 </body>
 </html>
